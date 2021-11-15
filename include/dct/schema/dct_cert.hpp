@@ -64,12 +64,14 @@ extern "C" {
 #include "dct/sigmgrs/sigmgr.hpp"
 #include "tlv_parser.hpp"
 
+#include <fmt/format.h>
+
 constexpr size_t thumbPrint_s{crypto_hash_sha256_BYTES};
 using thumbPrint = std::array<uint8_t,thumbPrint_s>;
 // XXX would be nice if std:array had its own hash specialization
 template<> struct std::hash<thumbPrint> {
     size_t operator()(const thumbPrint& tp) const noexcept {
-        return std::hash<std::u8string_view>{}({(char8_t*)tp.data(), tp.size()});
+        return std::hash<std::string_view>{}({(char*)tp.data(), tp.size()});
     }
 };
 
@@ -136,7 +138,7 @@ struct dctCert : ndn::Data {
     // (b) be covered by the signature. The requirements can be met for everything but
     // self-signed certs where they conflict. But self-signed certs are "self locating" so a
     // reserved locator value meaning "this cert" meets all the requirments.
-    static constexpr bool selfSigned(const thumbPrint& t) {
+    static bool selfSigned(const thumbPrint& t) {
         return std::all_of(t.begin(), t.end(), [](uint8_t b){ return b == 0; });
     }
 

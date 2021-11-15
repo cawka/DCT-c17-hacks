@@ -61,7 +61,7 @@ struct certStore {
     const dctCert& get(const thumbPrint& tp) const { return certs_.at(tp); }
     const auto& operator[](const thumbPrint& tp) const { return get(tp); }
 
-    auto contains(const thumbPrint& tp) const noexcept { return certs_.contains(tp); }
+    bool contains(const thumbPrint& tp) const noexcept { return certs_.count(tp); }
 
     // lookup the signing cert of 'data'
     const dctCert& signingCert(const ndn::Data& data) const {
@@ -71,9 +71,10 @@ struct certStore {
     const auto& operator[](const ndn::Data& data) const { return signingCert(data); }
 
     const auto& key(const thumbPrint& tp) const { return key_.at(tp); }
-    auto canSign(const thumbPrint& tp) const { return key_.contains(tp); }
+    bool canSign(const thumbPrint& tp) const { return key_.count(tp); }
 
-    auto finishAdd(auto it) {
+    template<class T>
+    auto finishAdd(T it) {
         if (it.second) {
             const auto& [tp, cert] = *it.first;
             certnames_.emplace(cert.getName(), tp);

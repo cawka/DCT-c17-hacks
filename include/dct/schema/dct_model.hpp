@@ -235,13 +235,13 @@ struct DCTmodel {
 
     // construct a pub name from pairs of tag, value parameters
     template<typename... Rest>
-        requires ((sizeof...(Rest) & 1) == 0)
+        // requires ((sizeof...(Rest) & 1) == 0)
     auto name(Rest&&... rest) { return bld_.name(std::forward<Rest>(rest)...); }
 
     // construct a publication with the given content using rest of args to construct its name
     template<typename... Rest>
-        requires ((sizeof...(Rest) & 1) == 0)
-    auto pub(std::span<const uint8_t> content, Rest&&... rest) {
+        // requires ((sizeof...(Rest) & 1) == 0)
+    auto pub(tcb::span<const uint8_t> content, Rest&&... rest) {
         Publication pub(name(std::forward<Rest>(rest)...));
         pubSigMgr().sign(pub.setContent(content.data(), content.size()));
         return pub;
@@ -249,7 +249,7 @@ struct DCTmodel {
 
     auto name(const std::vector<parItem>& pvec) { return bld_.name(pvec); }
 
-    auto pub(std::span<const uint8_t> content, const std::vector<parItem>& pvec) {
+    auto pub(tcb::span<const uint8_t> content, const std::vector<parItem>& pvec) {
         Publication pub(name(pvec));
         pubSigMgr().sign(pub.setContent(content.data(), content.size()));
         return pub;
@@ -310,16 +310,25 @@ struct DCTmodel {
         size_t index(size_t s) const { return s;  }
         size_t index(std::string_view s) const { return _s2i(s); }
 
-        std::string string(auto c) const { return getName()[index(c)].getValue().toRawStr(); }
+      template<class T>
+        std::string string(T c) const { return getName()[index(c)].getValue().toRawStr(); }
 
-        uint64_t number(auto c) const { return getName()[index(c)].toNumber(); }
+      template<class T>
+        uint64_t number(T c) const { return getName()[index(c)].toNumber(); }
         using ticks = std::chrono::microseconds; // period used in NDN timestamps
-        using clock = std::chrono::sys_time<ticks>;
-        clock time(auto c) const { return clock(ticks(getName()[index(c)].toTimestampMicroseconds())); }
-        double timeDelta(auto c, std::chrono::system_clock::time_point tp = std::chrono::system_clock::now()) const {
+        // using clock = std::chrono::sys_time<ticks>;
+      using clock =  std::chrono::time_point<std::chrono::system_clock, ticks>;
+
+      template<class T>
+        auto time(T c) const { return clock(ticks(getName()[index(c)].toTimestampMicroseconds())); }
+
+      template<class T>
+        double timeDelta(T c, std::chrono::system_clock::time_point tp = std::chrono::system_clock::now()) const {
                     return std::chrono::duration_cast<std::chrono::duration<double>>(tp - time(c)).count();
         }
-        auto operator[](auto c) const { return string(c); }
+
+      template<class T>
+        auto operator[](T c) const { return string(c); }
     };
 };
 

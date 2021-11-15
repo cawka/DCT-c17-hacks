@@ -116,7 +116,7 @@ struct DistCert
                     [this](const ndn::Data& d, bool acked) {
                         _LOG_INFO("wasDelivered: " << acked << " " << d.getName().toUri());
                         auto item = std::hash<ndn::Data>{}(d);
-                        if (m_initialPubs.contains(item)) m_initialPubs.erase(item);
+                        if (m_initialPubs.count(item)) m_initialPubs.erase(item);
                         if (! m_havePeer && (!acked || m_initialPubs.empty())) {
                             if (acked) {
                                 m_havePeer = true; 

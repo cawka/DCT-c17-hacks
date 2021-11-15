@@ -150,12 +150,12 @@ struct pubBldr {
         auto cbm = cbm_;
         auto schain = cs_.signingChain();
         for (auto bm = cbm; bm != 0; ) {
-            auto c = std::countr_zero(bm);
+            auto c = boost::core::countr_zero(bm);
             bm &=~ (1u << c);
             if (!matches(cs_.signingChain(), bs_.chain_[c])) cbm &=~ (1u << c);
         }
         if (cbm == 0) throw schema_error("no valid signing cert found");
-        dprint("chain: {}, signing cert: /{}\n", std::countr_zero(cbm), fmt::join(cs_.signingChain()[0], "/"));
+        dprint("chain: {}, signing cert: /{}\n", boost::core::countr_zero(cbm), fmt::join(cs_.signingChain()[0], "/"));
         return cbm;
     }
 
@@ -192,7 +192,8 @@ struct pubBldr {
     // return value of cert[chain[idx]] component 'c' under corespondence 'cor'.
     // If the cor isn't for a pub or the pub's c component doesn't match
     // 'cor' an error is thrown.
-    auto mapCor(auto idx, auto c, auto cor) {
+  template<class A, class B, class C>
+    auto mapCor(A idx, B c, C cor) {
         c &= SC_VALUE;
         auto cert = cs_.signingChain();
         for (const auto& [cert1, comp1, cert2, comp2] : bs_.cor_[cor]) {
@@ -212,7 +213,8 @@ struct pubBldr {
     // comp values 'vlist' and the pub's corespondences 'cor'. The
     // resulting template will be complete except for parameter values
     // which are supplied to the build* calls.
-    void addTemplate(auto tmplt, auto comp, auto vlist, auto cor) {
+  template<class A, class B, class C, class D>
+    void addTemplate(A tmplt, B comp, C vlist, D cor) {
         pTmplt pt{};
         pt.dpar_ = comp;
         // build valset bitmap from vlist. A bit will be set for every
@@ -415,9 +417,9 @@ struct pubBldr {
     // parameters and values for all the pub's parameters must be supplied.
     // An error is thrown otherwise.
     template<typename... Rest>
-        requires ((sizeof...(Rest) & 1) == 0)
+        // requires ((sizeof...(Rest) & 1) == 0)
     Name name(Rest&&... rest) {
-        static_assert((sizeof...(Rest) & 1) == 0, "must supply name,value argument pairs");
+        // static_assert((sizeof...(Rest) & 1) == 0, "must supply name,value argument pairs");
         Params par{};
         par.resize(tag_.size());
         doParam(par, std::forward<Rest>(rest)...);

@@ -1,4 +1,4 @@
-CXXFLAGS = -Wall -Wextra -g -O0 -std=c++20 -I../include
+CXXFLAGS = -Wall -Wextra -g -O0 -std=c++17 -I../include
 CXXFLAGS += -fsanitize=address,undefined
 
 ifeq ($(shell uname -s),Linux)
@@ -14,7 +14,7 @@ FLEX = /opt/local/bin/flex
 CXXFLAGS += -I/opt/local/include -I/usr/local/include
 # we can't fix boost warnings so suppress them
 CXXFLAGS += --system-header-prefix=boost/
-LDFLAGS += -L/opt/local/lib -L/usr/local/lib
+LDFLAGS += -L/usr/local/opt/openssl/lib -L/opt/local/lib -L/usr/local/lib
 LIBS =  -lndn-ind -lboost_iostreams-mt -llog4cxx -lsodium -lcrypto
 endif
 

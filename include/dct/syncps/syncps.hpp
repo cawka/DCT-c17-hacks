@@ -432,7 +432,7 @@ class SyncPubsub
             // are in this iblt (they'll be in the 'need' set).
             ((m_iblt - m_pcbiblt) - iblt).listEntries(have, need);
             for (const auto hash : need) {
-                if (!m_pubCbs.contains(hash)) continue;
+                if (!m_pubCbs.count(hash)) continue;
                 // there's a callback for this hash. make sure the pub is still active
                 auto h = m_hash2pub.find(hash);
                 if (h == m_hash2pub.end()) continue;
@@ -669,7 +669,7 @@ class SyncPubsub
 
         m_scheduler.schedule(pubLifetime, [this, p, hash] {
                                                 m_active[p] &=~ 1U;
-                                                if(m_pubCbs.contains(hash)) {
+                                                if(m_pubCbs.count(hash)) {
                                                     m_pubCbs[hash](*p, false);
                                                     m_pubCbs.erase(hash);
                                                     m_pcbiblt.erase(hash);

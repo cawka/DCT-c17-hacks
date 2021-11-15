@@ -36,6 +36,8 @@
 #include <unordered_map>
 #include "dct/format.hpp"
 
+#include <boost/core/bit.hpp>
+
 namespace bschema {
 
 // TLV assignments for binary schema encoding. The top level block has
@@ -164,7 +166,7 @@ struct bSchema {
     // return the first (or only) template of pub 'i'
     const bName& pubTmpl0(pubidx i) const {
         if (i >= pub_.size()) throw schema_error(format("no pub with index {} in schema", i));
-        auto t = discrim_[std::countr_zero(pub_[i].d)].tmpl;
+        auto t = discrim_[boost::core::countr_zero(pub_[i].d)].tmpl;
         return tmplt_[t];
     }
     auto bNameToStr(const bName& bnm) const {

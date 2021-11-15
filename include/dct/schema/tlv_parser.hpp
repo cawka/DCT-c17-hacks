@@ -23,13 +23,13 @@
  *  More information on DCT is available from info@pollere.net
  */
 
-#include <span>
+#include <span.hpp>
 #include <stdexcept>
 using runtime_error = std::runtime_error;
 
 // routines for parsing NDN tlv blocks
 struct tlvParser {
-    using Blk = std::span<const uint8_t>;
+    using Blk = tcb::span<const uint8_t>;
     Blk m_blk{};
     size_t m_off{}; 
 
@@ -41,7 +41,7 @@ struct tlvParser {
 
     constexpr auto eof() const noexcept { return off() >= size(); }
 
-    constexpr Blk subspan(size_t off, size_t cnt = std::dynamic_extent) const { return m_blk.subspan(off, cnt); }
+    constexpr Blk subspan(size_t off, size_t cnt = tcb::dynamic_extent) const { return m_blk.subspan(off, cnt); }
 
     constexpr Blk rest() const { return subspan(off()); }
 
@@ -151,7 +151,7 @@ struct tlvParser {
     auto toVector() {
         auto len = size() - off();
         if (len % sizeof(T) != 0) throw runtime_error("block content not integer multiple of item size");
-        std::span<const T> bspan((const T*)(m_blk.data()+m_off), len / sizeof(T));
+        tcb::span<const T> bspan((const T*)(m_blk.data()+m_off), len / sizeof(T));
         return std::vector(bspan.begin(), bspan.end());
     }
 };

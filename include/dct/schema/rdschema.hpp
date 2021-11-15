@@ -116,22 +116,22 @@ struct rdSchema {
     template<typename Tin,typename Tout=typename std::decay_t<Tin>::value_type>
     Tout getItem(int last) {
         // test if Tout is a vector (or string)
-        constexpr bool is_vec = requires(const Tout& t) { t.data(); };
-        if constexpr (is_vec) {
+        // constexpr bool is_vec = requires(const Tout& t) { t.data(); };
+        // if constexpr (is_vec) {
             // read a length followed by that many component tokens.
-            auto len = decodeLen();
-            if (len > last - is_.tellg()) throw schema_error("vec too long");
-            using iType = typename std::decay_t<Tout>::value_type;
-            if (len % sizeof(iType) != 0) throw schema_error("length not multiple of item size");
-            Tout dat(len / sizeof(iType));
-            if (len > 0) is_.read((char*)(&dat[0]), len);
-            return dat;
-        } else {
+            // auto len = decodeLen();
+            // if (len > last - is_.tellg()) throw schema_error("vec too long");
+            // using iType = typename std::decay_t<Tout>::value_type;
+            // if (len % sizeof(iType) != 0) throw schema_error("length not multiple of item size");
+            // Tout dat(len / sizeof(iType));
+            // if (len > 0) is_.read((char*)(&dat[0]), len);
+            // return dat;
+        // } else {
             if (last - int(sizeof(Tout)) < is_.tellg()) throw schema_error("item truncated");
             Tout dat;
             is_.read((char*)(&dat), sizeof(Tout));
             return dat;
-        }
+        // }
     }
 
     // read TLV 'tlv' which contains a 'vector' of type 'Tout' items.
@@ -192,7 +192,8 @@ struct rdSchema {
                 auto item = getItem<decltype(vec)>(last);
                 // All chains must end with the same trust anchor.
                 if (vec.size() > 0 && vec[0].back() != item.back()) throw schema_error("multiple trust anchors");
-                for (int prev = -1; const auto& c : item) {
+                int prev = -1;
+                for (const auto& c : item) {
                     if (!(c < ncert && prev < c)) throw schema_error("invalid chain cert order");
                     prev = c;
                 }
@@ -260,7 +261,7 @@ struct rdSchema {
                 dprint(" {}: {}\n", vec.size(), n);
                 const auto& [chain,tmplt,comp,vlist,cor] = n;
                 for (auto chn = chain; chn != 0; ) {
-                    size_t c = std::countr_zero(chn);
+                    size_t c = boost::core::countr_zero(chn);
                     if (c >= bs_.chain_.size()) throw schema_error("invalid discrim chain index");
                     chn &=~ 1u << c;
                 }
@@ -298,20 +299,20 @@ struct rdSchema {
                 // XXX MacOS clang11 misnames std::bit_width as log2p1, fixed in clang12. The <version>
                 // defines are still broken in Apple's clang12 so we have to test the wrong define.
 //#if defined(__APPLE__) && !defined(__cpp_lib_bitops)
-#if defined(__APPLE__) && !defined(__cpp_lib_bounded_array_traits)
-                if (std::log2p1(disc) - 1u >= bs_.discrim_.size()) throw schema_error("invalid pub discrim index");
-#else
-                if (std::bit_width(disc) - 1u >= bs_.discrim_.size())
+// #if defined(__APPLE__) && !defined(__cpp_lib_bounded_array_traits)
+//                 if (boost::core::log2p1(disc) - 1u >= bs_.discrim_.size()) throw schema_error("invalid pub discrim index");
+// #else
+                if (boost::core::bit_width(disc) - 1u >= bs_.discrim_.size())
                     throw schema_error(format("invalid pub discrim index {} ({:x}) >= {}",
-                                std::bit_width(disc) - 1u, disc, bs_.discrim_.size()));
-#endif
+                                              boost::core::bit_width(disc) - 1u, disc, bs_.discrim_.size()));
+// #endif
 
                 // param is a bitmask with each bit corresponding to one component of the pub.
                 // A bit is set if that component is a pub parameter so each set bit position
                 // must be < #pub components. Each parameter must also be marked as such in the
                 // pub's templates but this is validated in chkconsist.
                 for (auto par = param; par != 0; ) {
-                    size_t p = std::countr_zero(par);
+                    size_t p = boost::core::countr_zero(par);
                     if (p >= bs_.tag_[tagi].size()) throw schema_error("invalid pub param index");
                     par &=~ 1u << p;
                 }
@@ -326,7 +327,7 @@ struct rdSchema {
     }
     void chkCor(chainBM chainbm, const bName& tmplt, const chainCor& chnCor) {
         while (chainbm != 0) {
-            auto c = std::countr_zero(chainbm);
+            auto c = boost::core::countr_zero(chainbm);
             chainbm &=~ 1u << c;
             for (auto [cert1,comp1,cert2,comp2] : chnCor) {
                 if (cert1 >= cert2) throw schema_error("cor cert indices error");

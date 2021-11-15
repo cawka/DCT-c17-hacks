@@ -33,6 +33,8 @@
 #include <unordered_map>
 #include <utility>
 
+#include <chrono>
+
 //if not using syncps defaults, set these here
 static constexpr size_t MAX_CONTENT=768; //max content size in bytes, <= maxPubSize in syncps.hpp
 static constexpr size_t MAX_SEGS = 64;  //max segments of a msg, <= maxDifferences in syncps.hpp
@@ -252,7 +254,7 @@ struct mbps
             }
             // either msg complete or piece timed out so delivery has failed - delete msg state
             k = m_pending[mId].count();
-            if (m_pending.contains(mId)) m_pending.erase(mId);
+            if (m_pending.count(mId)) m_pending.erase(mId);
         }
         if (success) {  //TTP = "time to publish"
             _LOG_INFO("confirmPublication: msgID " << mId << "(" << n << " pieces) arrived, TTP " << p.timeDelta("mts"));
@@ -293,7 +295,7 @@ struct mbps
      * Return message id if successful, 0 otherwise.
      */
 
-    MsgID publish(msgParms&& mp, std::span<uint8_t> msg = {}, const confHndlr&& ch = nullptr)
+    MsgID publish(msgParms&& mp, tcb::span<uint8_t> msg = {}, const confHndlr&& ch = nullptr)
     {
         /*
          * Set up and publish Publication(s)
@@ -304,7 +306,7 @@ struct mbps
         auto mts = std::chrono::system_clock::now();
         mp.emplace_back("mts", mts);
 
-        uint64_t tms = duration_cast<std::chrono::microseconds>(mts.time_since_epoch()).count();
+        uint64_t tms = std::chrono::duration_cast<std::chrono::microseconds>(mts.time_since_epoch()).count();
         std::vector<uint8_t> emsg;
         for(size_t i=0; i<sizeof(tms); i++)
             emsg.push_back( tms >> i*8 );

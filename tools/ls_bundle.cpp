@@ -31,6 +31,7 @@
 #include "dct/format.hpp"
 #include "dct/schema/cert_bundle.hpp"
 
+#include <span.hpp>
 
 int main(int argc, const char* argv[]) {
     if (argc != 2) {
@@ -41,7 +42,7 @@ int main(int argc, const char* argv[]) {
     try {
         for (const auto& [cert, key] : rdCertBundle(buf)) {
             if (key.size()) {
-                std::span k{key};
+                tcb::span k{key};
                 print("{} key {}...\n", cert.getName().toUri(), fmt::join(k.first(3), ""));
             } else {
                 print("{}\n", cert.getName().toUri());
